@@ -1,0 +1,53 @@
+type NocStatus = "Pending" | "Completed" | "Granted" | "Refused";
+
+interface TeacherProfile {
+  id: number;
+  name: string;
+  user: { id: number; email: string; role: 'teacher' };
+}
+
+interface StudentOut {
+  id: number;
+  name: string;
+  roll_number?: string;
+}
+
+interface NocComponentStatus {
+  status: string;
+  is_applicable: boolean;
+}
+
+interface NocDetailRow {
+  status_record_id: number;
+  student: StudentOut;
+  noc_type: 'Theory' | 'Lab' | 'Tutorial';
+  attendance: NocComponentStatus;
+  cie: NocComponentStatus;
+  home_assignment: NocComponentStatus;
+  assignments: NocComponentStatus;
+  sce_status: NocComponentStatus;
+  current_status: 'Completed' | 'Pending';
+  final_status: 'Pending Verification' | 'Granted' | 'Refused';
+  is_updatable: boolean;
+}
+
+interface SubjectFilterData {
+  id: number;
+  name: string;
+  year: string;
+  has_cie: boolean;
+  has_ha: boolean;
+  has_lab: boolean;
+  has_tw: boolean;
+}
+
+interface FilterOptions {
+  subjects: SubjectFilterData[];
+  divisions: { id: number; name: string }[];
+}
+
+interface NOCManagementProps {
+  onBack: () => void;
+  authToken: string;
+  currentUser: TeacherProfile;
+}

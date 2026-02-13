@@ -1,0 +1,194 @@
+/* =========================
+   Root variables (light mode)
+========================= */
+:root {
+  --font-size: 14px;
+  --background: #ffffff;
+  --foreground: #252525;
+  --card: #ffffff;
+  --card-foreground: #252525;
+  --popover: #ffffff;
+  --popover-foreground: #252525;
+  --primary: #030213;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f0f5;
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: #ffffffd6;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --ring: #b4b4b4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --radius: 0.625rem;
+  --sidebar: #f9f9f9;
+  --sidebar-foreground: #252525;
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: #f9f9f9;
+  --sidebar-accent: #f1f1f1;
+  --sidebar-accent-foreground: #252525;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #b4b4b4;
+}
+
+/* =========================
+   Dark mode variables
+========================= */
+.dark {
+  --background: #252525;
+  --foreground: #f9f9f9;
+  --card: #252525;
+  --card-foreground: #f9f9f9;
+  --popover: #252525;
+  --popover-foreground: #f9f9f9;
+  --primary: #f9f9f9;
+  --primary-foreground: #252525;
+  --secondary: #444444;
+  --secondary-foreground: #f9f9f9;
+  --muted: #444444;
+  --muted-foreground: #b4b4b4;
+  --accent: #444444;
+  --accent-foreground: #f9f9f9;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: #444444;
+  --input: #444444;
+  --input-background: #333333;
+  --ring: #888888;
+  --sidebar: #1c1c1c;
+  --sidebar-foreground: #f9f9f9;
+  --sidebar-primary: #555555;
+  --sidebar-primary-foreground: #f9f9f9;
+  --sidebar-accent: #444444;
+  --sidebar-accent-foreground: #f9f9f9;
+  --sidebar-border: #444444;
+  --sidebar-ring: #888888;
+}
+
+/* =========================
+   Base element styles
+========================= */
+* {
+  box-sizing: border-box;
+  outline: none;
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-size: var(--font-size);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+  font-family: system-ui, sans-serif;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+p,
+label,
+button,
+input,
+textarea {
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: var(--font-weight-medium);
+}
+
+h2 {
+  font-size: 1.75rem;
+  font-weight: var(--font-weight-medium);
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-medium);
+}
+
+h4 {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-medium);
+}
+
+p,
+label,
+input,
+textarea,
+button {
+  font-size: 1rem;
+}
+
+/* Inputs & Textareas */
+input,
+textarea,
+select,
+button {
+  background-color: var(--input-background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+}
+
+input:disabled,
+textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Modal/dialog */
+.modal,
+[role="dialog"] {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  padding: 1.5rem;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius);
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Utility classes */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
+/* Ensure dark mode applies properly */
+.dark body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: var(--input-background);
+  color: var(--foreground);
+}
