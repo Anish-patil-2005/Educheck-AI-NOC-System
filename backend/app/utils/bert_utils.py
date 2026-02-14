@@ -81,7 +81,20 @@ def _get_embedding(text: str):
         headers=HEADERS,
         json={"inputs": text}
     )
-    return np.array(response.json())
+
+    if response.status_code != 200:
+        raise Exception(f"HF Embedding API failed: {response.text}")
+
+    data = response.json()
+
+    # HF sometimes wraps embeddings inside list
+    if isinstance(data, dict) and "error" in data:
+        raise Exception(f"HF Embedding error: {data['error']}")
+
+    if isinstance(data, list):
+        return np.array(data)
+
+    raise Exception(f"Unexpected HF response format: {data}")
 
 def _cross_score(a: str, b: str):
     payload = {
