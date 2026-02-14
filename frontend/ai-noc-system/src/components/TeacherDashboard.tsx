@@ -16,7 +16,6 @@ import {
   LogOut,
   Search,
   AlertTriangle,
-  CheckCircle,
   XCircle,
   Upload
 } from 'lucide-react';
@@ -24,11 +23,31 @@ import { StudentsTable } from './StudentsTable';
 import { NOCManagement } from './NOCManagement';
 import { AttendanceInput } from './AttendanceInput';
 
-interface TeacherDashboardProps {
-  onLogout: () => void;
+/* ================================
+   Types
+================================ */
+
+interface TeacherProfile {
+  id: number;
+  name: string;
+  user: {
+    id: number;
+    email: string;
+    role: 'teacher';
+  };
 }
 
-export function TeacherDashboard({ onLogout }: TeacherDashboardProps) {
+interface TeacherDashboardProps {
+  onLogout: () => void;
+  authToken: string;
+  currentUser: TeacherProfile;
+}
+
+/* ================================
+   Component
+================================ */
+
+export function TeacherDashboard({ onLogout, authToken, currentUser }: TeacherDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
   const sidebarItems = [
@@ -41,7 +60,6 @@ export function TeacherDashboard({ onLogout }: TeacherDashboardProps) {
     { id: 'notifications', label: 'Notifications', icon: Bell },
   ];
 
-  // Mock data for dashboard stats
   const stats = {
     totalStudents: 45,
     lowAttendance: 8,
@@ -54,13 +72,21 @@ export function TeacherDashboard({ onLogout }: TeacherDashboardProps) {
     switch (activeTab) {
       case 'attendance':
         return <AttendanceInput />;
+
       case 'noc-management':
-        <NOCManagement onBack={() => setActiveTab('overview')} userRole="teacher" />;
+        return (
+          <NOCManagement
+            onBack={() => setActiveTab('overview')}
+            authToken={authToken}
+            currentUser={currentUser}
+          />
+        );
+
       default:
         return (
           <div className="space-y-6">
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -120,9 +146,9 @@ export function TeacherDashboard({ onLogout }: TeacherDashboardProps) {
                   </div>
                 </CardContent>
               </Card>
+
             </div>
 
-            {/* Students Table */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -146,7 +172,7 @@ export function TeacherDashboard({ onLogout }: TeacherDashboardProps) {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
+      
       <div className="w-64 bg-gray-900 text-white p-4">
         <div className="mb-8">
           <div className="flex items-center space-x-2 mb-6">
@@ -200,9 +226,7 @@ export function TeacherDashboard({ onLogout }: TeacherDashboardProps) {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {/* Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -218,13 +242,14 @@ export function TeacherDashboard({ onLogout }: TeacherDashboardProps) {
               </Button>
               <Avatar>
                 <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" />
-                <AvatarFallback>TR</AvatarFallback>
+                <AvatarFallback>
+                  {currentUser?.name?.slice(0,2).toUpperCase() || "TR"}
+                </AvatarFallback>
               </Avatar>
             </div>
           </div>
         </div>
 
-        {/* Dashboard Content */}
         <div className="p-6">
           {renderContent()}
         </div>
