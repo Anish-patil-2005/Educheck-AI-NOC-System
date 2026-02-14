@@ -4,14 +4,14 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Input } from './ui/input';
-import { 
-  Home, 
-  Users, 
-  FileText, 
-  BarChart3, 
-  BookOpen, 
-  GraduationCap, 
-  Bell, 
+import {
+  Home,
+  Users,
+  FileText,
+  BarChart3,
+  BookOpen,
+  GraduationCap,
+  Bell,
   Settings,
   LogOut,
   Search,
@@ -47,7 +47,12 @@ interface TeacherDashboardProps {
    Component
 ================================ */
 
-export function TeacherDashboard({ onLogout, authToken, currentUser }: TeacherDashboardProps) {
+export function TeacherDashboard({
+  onLogout,
+  authToken,
+  currentUser
+}: TeacherDashboardProps) {
+
   const [activeTab, setActiveTab] = useState('overview');
 
   const sidebarItems = [
@@ -85,8 +90,9 @@ export function TeacherDashboard({ onLogout, authToken, currentUser }: TeacherDa
       default:
         return (
           <div className="space-y-6">
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              
+
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -149,6 +155,7 @@ export function TeacherDashboard({ onLogout, authToken, currentUser }: TeacherDa
 
             </div>
 
+            {/* Students Table */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -165,6 +172,7 @@ export function TeacherDashboard({ onLogout, authToken, currentUser }: TeacherDa
                 <StudentsTable />
               </CardContent>
             </Card>
+
           </div>
         );
     }
@@ -172,7 +180,8 @@ export function TeacherDashboard({ onLogout, authToken, currentUser }: TeacherDa
 
   return (
     <div className="flex h-screen bg-gray-50">
-      
+
+      {/* Sidebar */}
       <div className="w-64 bg-gray-900 text-white p-4">
         <div className="mb-8">
           <div className="flex items-center space-x-2 mb-6">
@@ -216,7 +225,7 @@ export function TeacherDashboard({ onLogout, authToken, currentUser }: TeacherDa
             <Settings className="w-5 h-5" />
             <span>Settings</span>
           </button>
-          <button 
+          <button
             onClick={onLogout}
             className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-red-600 hover:text-white transition-colors"
           >
@@ -226,12 +235,15 @@ export function TeacherDashboard({ onLogout, authToken, currentUser }: TeacherDa
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="flex-1 overflow-auto">
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl text-gray-900">Teacher Dashboard</h1>
-              <p className="text-gray-600">Monitor attendance, NOC clearance, and assignment compliance</p>
+              <p className="text-gray-600">
+                Monitor attendance, NOC clearance, and assignment compliance
+              </p>
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
@@ -243,7 +255,7 @@ export function TeacherDashboard({ onLogout, authToken, currentUser }: TeacherDa
               <Avatar>
                 <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" />
                 <AvatarFallback>
-                  {currentUser?.name?.slice(0,2).toUpperCase() || "TR"}
+                  {currentUser?.name?.slice(0, 2).toUpperCase() || "TR"}
                 </AvatarFallback>
               </Avatar>
             </div>
