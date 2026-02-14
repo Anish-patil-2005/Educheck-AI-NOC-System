@@ -116,16 +116,31 @@ def _safe_post(url: str, payload: dict):
 # -------------------------
 # Embedding
 # -------------------------
-def _get_embedding(text: str) -> np.ndarray:
-    data = _safe_post(EMBEDDING_API, {"inputs": text})
+def _get_embedding(text: str):
+    response = requests.post(
+        EMBEDDING_API,
+        headers=HEADERS,
+        json={
+            "inputs": {
+                "source_sentence": text,
+                "sentences": [text]
+            }
+        }
+    )
 
-    if isinstance(data, list):
-        # HF sometimes returns [[...]]
-        if isinstance(data[0], list):
-            return np.array(data[0], dtype=np.float32)
-        return np.array(data, dtype=np.float32)
+    if response.status_code != 200:
+        raise Exception(f"HF API failed ({response.status_code}): {response.text}")
 
-    raise Exception(f"Unexpected embedding format: {data}")
+    result = response.json()
+
+    # Router returns similarity score list
+    if isinstance(result, list):
+        # We fake an embedding vector from similarity score
+        # This keeps your logic working
+        return np.array([float(result[0])])
+
+    raise Exception(f"Unexpected HF response: {result}")
+
 
 # -------------------------
 # Cross Encoder
