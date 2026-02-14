@@ -1,3 +1,4 @@
+#  for deployment
 # ===============================
 # Core Framework
 # ===============================
@@ -19,22 +20,19 @@ pyjwt==2.8.0
 python-jose[cryptography]==3.3.0
 
 # ===============================
-# AI / ML / NLP
+# AI (Lightweight Version)
 # ===============================
 numpy>=1.26.0
-torch>=2.1.0
-sentence-transformers==2.3.1
-transformers==4.35.2
 scikit-learn==1.4.0
 nltk==3.8.1
 yake==0.4.8
+requests==2.31.0
 
 # ===============================
 # File Handling
 # ===============================
 python-docx==1.1.0
 pypdf==4.0.1
-PyPDF2==3.0.1
 aiofiles==23.2.1
 
 # ===============================
@@ -59,115 +57,176 @@ pydantic[email]==2.6.1
 
 
 
-
-
-# # ===================================================================
-# # Core Web Framework
-# # ===================================================================
-# fastapi
-# uvicorn[standard]
-
-# # ===================================================================
-# # Database & Migrations
-# # ===================================================================
-# sqlalchemy
-# alembic
-# pysqlite3-binary # Explicitly include for cross-platform compatibility
-
-# # ===================================================================
-# # Authentication & Security
-# # ===================================================================
-# passlib[bcrypt]
-# python-jose[cryptography] # For JWT handling (legacy, if still used)
-# PyJWT # The current, primary JWT library
-
-# # ===================================================================
-# # AI - Semantic Similarity (BERT)
-# # ===================================================================
-# #  is the core deep learning framework
-# PyTorch  
-# torch
-
-# # Face libraries for models and pipelines
-# Hugging 
-# transformers
-# sentence-transformers
-
-# #  for natural language processing utilities like WordNet
-# NLTK
-# nltk
-
-# #  for keyword extraction in the similarity ensemble
-# YAKE
-# yake
-
-# # ===================================================================
-# # AI - Plagiarism & Data Science
-# # ===================================================================
-# # is used for TF-IDF and its stop words list
-# Scikit-learn 
-# scikit-learn
-
-
-# # is a fundamental dependency for numerical operations
-# NumPy 
-# numpy
-
-# # ===================================================================
-# # API & File Handling
-# # ===================================================================
-# #Required by FastAPI for handling form data and file uploads
- 
-# python-multipart
-
-# #  for extracting text from uploaded files
-# Libraries
-# PyPDF2
-# python-docx
-
-# # For asynchronous file I/O operations
-# aiofiles
-
-# # ===================================================================
-# # Notifications (Email)
-# # ===================================================================
-# fastapi-mail
-
-# # ===================================================================
-# # General Utilities
-# # ===================================================================
-# #  is a core dependency of FastAPI but good to list explicitly
-# # for email validation and other custom models.
-# Pydantic
-# pydantic[email]
-
-
-# # Core Framework & Server
+# # ===============================
+# # Core Framework
+# # ===============================
 # fastapi==0.109.0
 # uvicorn[standard]==0.27.0
-# python-multipart==0.0.6  # Required for OAuth2 forms and File Uploads
+# python-multipart==0.0.6
 
-# # Database
+# # ===============================
+# # Database & Migrations
+# # ===============================
 # sqlalchemy==2.0.25
-# # Note: Add 'psycopg2-binary' if using PostgreSQL, or 'mysql-connector-python' for MySQL. 
-# # SQLite (default) does not need an extra driver.
+# alembic==1.13.1
 
+# # ===============================
 # # Authentication & Security
-# passlib[bcrypt]==1.7.4   # For password hashing (app/core/security.py)
-# pyjwt==2.8.0             # For JWT token creation/decoding (matches 'import jwt')
+# # ===============================
+# passlib[bcrypt]==1.7.4
+# pyjwt==2.8.0
+# python-jose[cryptography]==3.3.0
 
-# # AI, ML & NLP (for bert_utils.py & plagiarism_utils.py)
+# # ===============================
+# # AI / ML / NLP
+# # ===============================
 # numpy>=1.26.0
-# torch>=2.1.0             # Required by sentence-transformers
+# torch>=2.1.0
 # sentence-transformers==2.3.1
-# transformers==4.37.0
-# scikit-learn==1.4.0      # For TfidfVectorizer and Cosine Similarity
-# nltk==3.8.1              # For WordNet synonym expansion
+# transformers==4.35.2
+# scikit-learn==1.4.0
+# nltk==3.8.1
+# yake==0.4.8
 
-# # File Processing (Inferred for handling .docx and .pdf uploads)
+# # ===============================
+# # File Handling
+# # ===============================
 # python-docx==1.1.0
 # pypdf==4.0.1
+# PyPDF2==3.0.1
+# aiofiles==23.2.1
 
+# # ===============================
+# # Email
+# # ===============================
+# fastapi-mail==1.4.1
+
+# # ===============================
 # # Utilities
-# pytz==2023.3.post1       # Used in app/crud.py for timezone handling
-# python-dotenv==1.0.1     # Recommended for managing environment variables (.env)
+# # ===============================
+# pytz==2023.3.post1
+# python-dotenv==1.0.1
+# pydantic[email]==2.6.1
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # # ===================================================================
+# # # Core Web Framework
+# # # ===================================================================
+# # fastapi
+# # uvicorn[standard]
+
+# # # ===================================================================
+# # # Database & Migrations
+# # # ===================================================================
+# # sqlalchemy
+# # alembic
+# # pysqlite3-binary # Explicitly include for cross-platform compatibility
+
+# # # ===================================================================
+# # # Authentication & Security
+# # # ===================================================================
+# # passlib[bcrypt]
+# # python-jose[cryptography] # For JWT handling (legacy, if still used)
+# # PyJWT # The current, primary JWT library
+
+# # # ===================================================================
+# # # AI - Semantic Similarity (BERT)
+# # # ===================================================================
+# # #  is the core deep learning framework
+# # PyTorch  
+# # torch
+
+# # # Face libraries for models and pipelines
+# # Hugging 
+# # transformers
+# # sentence-transformers
+
+# # #  for natural language processing utilities like WordNet
+# # NLTK
+# # nltk
+
+# # #  for keyword extraction in the similarity ensemble
+# # YAKE
+# # yake
+
+# # # ===================================================================
+# # # AI - Plagiarism & Data Science
+# # # ===================================================================
+# # # is used for TF-IDF and its stop words list
+# # Scikit-learn 
+# # scikit-learn
+
+
+# # # is a fundamental dependency for numerical operations
+# # NumPy 
+# # numpy
+
+# # # ===================================================================
+# # # API & File Handling
+# # # ===================================================================
+# # #Required by FastAPI for handling form data and file uploads
+ 
+# # python-multipart
+
+# # #  for extracting text from uploaded files
+# # Libraries
+# # PyPDF2
+# # python-docx
+
+# # # For asynchronous file I/O operations
+# # aiofiles
+
+# # # ===================================================================
+# # # Notifications (Email)
+# # # ===================================================================
+# # fastapi-mail
+
+# # # ===================================================================
+# # # General Utilities
+# # # ===================================================================
+# # #  is a core dependency of FastAPI but good to list explicitly
+# # # for email validation and other custom models.
+# # Pydantic
+# # pydantic[email]
+
+
+# # # Core Framework & Server
+# # fastapi==0.109.0
+# # uvicorn[standard]==0.27.0
+# # python-multipart==0.0.6  # Required for OAuth2 forms and File Uploads
+
+# # # Database
+# # sqlalchemy==2.0.25
+# # # Note: Add 'psycopg2-binary' if using PostgreSQL, or 'mysql-connector-python' for MySQL. 
+# # # SQLite (default) does not need an extra driver.
+
+# # # Authentication & Security
+# # passlib[bcrypt]==1.7.4   # For password hashing (app/core/security.py)
+# # pyjwt==2.8.0             # For JWT token creation/decoding (matches 'import jwt')
+
+# # # AI, ML & NLP (for bert_utils.py & plagiarism_utils.py)
+# # numpy>=1.26.0
+# # torch>=2.1.0             # Required by sentence-transformers
+# # sentence-transformers==2.3.1
+# # transformers==4.37.0
+# # scikit-learn==1.4.0      # For TfidfVectorizer and Cosine Similarity
+# # nltk==3.8.1              # For WordNet synonym expansion
+
+# # # File Processing (Inferred for handling .docx and .pdf uploads)
+# # python-docx==1.1.0
+# # pypdf==4.0.1
+
+# # # Utilities
+# # pytz==2023.3.post1       # Used in app/crud.py for timezone handling
+# # python-dotenv==1.0.1     # Recommended for managing environment variables (.env)
