@@ -59,7 +59,7 @@ interface SCEManagementProps {
   authToken: string;
 }
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const PIE_COLORS = { 'completed': '#10B981', 'late': '#F59E0B', 'pending': '#EF4444' };
 
 // ===================================================================

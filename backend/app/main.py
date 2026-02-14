@@ -37,6 +37,8 @@ origins = [
      "http://localhost:5176",  # <-- ADD THIS LINE
      "http://localhost:5177",  # <-- ADD THIS LINE
     "http://127.0.0.1:5173",
+    
+    
 ]
 
 # Add the CORSMiddleware to your app instance.

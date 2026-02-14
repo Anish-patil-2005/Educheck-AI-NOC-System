@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { GraduationCap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
@@ -91,7 +92,7 @@ interface LoginPageProps {
   // CORRECTED: The component now expects onLoginSuccess to accept both a role and a token.
   onLoginSuccess: (role: Role, token: string) => void;
 }
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export function LoginPage({ onLoginSuccess }: LoginPageProps) {
   // --- State Management ---
   const [email, setEmail] = useState('');

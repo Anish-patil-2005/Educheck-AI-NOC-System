@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // AI-based NOC Attendance Compliance & Assignment Verification System
 // Version 38 - Corrected auth token handling and added session persistence
 import { useState, useEffect } from 'react';
