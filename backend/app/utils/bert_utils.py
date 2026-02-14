@@ -32,9 +32,10 @@ HEADERS = {
 
 TIMEOUT = 30  # seconds
 
-EMBEDDING_API = "https://api-inference.huggingface.co/models/sentence-transformers/all-mpnet-base-v2"
-CROSS_API = "https://api-inference.huggingface.co/models/cross-encoder/stsb-roberta-large"
-NLI_API = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
+EMBEDDING_API = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-mpnet-base-v2"
+CROSS_API = "https://router.huggingface.co/hf-inference/models/cross-encoder/stsb-roberta-large"
+NLI_API = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-mnli"
+
 
 TFIDF_MAX_FEATURES = 20000
 
