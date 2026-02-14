@@ -3,7 +3,7 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from app import models
 
 # IMPORTANT: Define the base URL of your frontend application
-FRONTEND_URL = "http://localhost:5173" 
+FRONTEND_URL = "https://educheck-ai-assignment-noc-system-8r7pgobrx.vercel.app/" 
 
 # Use environment variables for security in a real app
 conf = ConnectionConfig(
