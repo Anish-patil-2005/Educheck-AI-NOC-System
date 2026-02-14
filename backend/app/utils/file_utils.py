@@ -1,5 +1,5 @@
 from typing import Optional
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from docx import Document
 import aiofiles
 from fastapi import UploadFile
