@@ -11,6 +11,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from nltk.corpus import wordnet as wn
 import nltk
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # -------------------------
 # NLTK Setup
@@ -21,7 +24,7 @@ nltk.download("omw-1.4", quiet=True)
 # -------------------------
 # HuggingFace Config
 # -------------------------
-HF_API_KEY = os.getenv("HF_API_KEY")
+HF_API_KEY =os.getenv("HF_API_KEY")
 
 if not HF_API_KEY:
     raise Exception("HF_API_KEY is not set in environment variables")

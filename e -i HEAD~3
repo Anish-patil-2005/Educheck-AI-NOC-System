@@ -1,0 +1,125 @@
+[33mcommit dcd6ec43b1e3abd1bdaf54236ff3e39fff5de1f2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sun Feb 15 09:06:53 2026 +0530
+
+    Remove hardcoded HuggingFace token and use environment variable
+
+[33mcommit 126db5a575f90a12a4b4b49d420f26665b3e3295[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sun Feb 15 09:00:44 2026 +0530
+
+    Checking the file submission
+
+[33mcommit 3242e3169e859bd02887c3443bdfa847a9c3089a[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sun Feb 15 08:56:29 2026 +0530
+
+    Checking the file submission
+
+[33mcommit f511ec77236d2cf3b0e27d8df91810886cf35105[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 11:52:59 2026 +0530
+
+    added the frontend url to cors
+
+[33mcommit d778cdeb9a501758fd5e98d0eade45da09325227[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 11:41:51 2026 +0530
+
+    added the frontend url to cors
+
+[33mcommit 7633a6842f3de061bb6d550f7b15e4465d6f5987[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 11:28:12 2026 +0530
+
+    added the frontend url to cors
+
+[33mcommit bdff3791ff84a27f1b7ed22fa0e06e5fe3a22329[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 11:24:44 2026 +0530
+
+    added the frontend url to cors
+
+[33mcommit a5786e1cafdebb366fd37568f348b96ceb1580ce[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 11:14:41 2026 +0530
+
+    added the frontend url to cors
+
+[33mcommit 3e1ae31e9516005fe43f37b90ee2b24ae39a2066[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 11:08:43 2026 +0530
+
+    added the frontend url to cors
+
+[33mcommit ea50aa3daf0052a002264b62ede4a2a47db2d706[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 11:00:37 2026 +0530
+
+    added the frontend url to cors
+
+[33mcommit 85e2f5fd34cf681c4f5007d8f88626d7e1178557[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 10:56:02 2026 +0530
+
+    Updated the ffronetned
+
+[33mcommit b6ad640ed4a7606025b31ddde30fc328695519b5[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 10:48:45 2026 +0530
+
+    Updated the ffronetned
+
+[33mcommit ca553af9bc0bc6bb14a3819fa5555be2c1fd5d73[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 10:33:44 2026 +0530
+
+     Updated the API Endpoint
+
+[33mcommit c58cfac1ea744f81353a875d6f5c269d5a50b2d3[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 10:08:55 2026 +0530
+
+    Updated security check
+
+[33mcommit 351320a160b7f68d80bdb9bd408af254a3c687b4[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 09:59:03 2026 +0530
+
+    Updated security check
+
+[33mcommit bcc93ab09996a4bd0ea05dd0c88b40f4b21f2f7a[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 09:32:30 2026 +0530
+
+    updated runtime.txt
+
+[33mcommit 0d91db2599856114b0a77d719489f494f0af9593[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 09:15:38 2026 +0530
+
+    updated runtime.txt
+
+[33mcommit 8578d4a78a7240a2a52517043349edf1f2fd6ec8[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 09:04:39 2026 +0530
+
+    updated runtime.txt
+
+[33mcommit 9520805263b5e245d28229759219d9e6532c2f65[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Sat Feb 14 08:54:21 2026 +0530
+
+    Ready for deploymment
+
+[33mcommit 0df4556cff8c57035adb091bf5633f1e8474d813[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Fri Feb 13 23:34:32 2026 +0530
+
+    Evaluation system updated
+
+[33mcommit 718f2f49ccd88180f0bfdea0630c8785ad97655c[m
+Author: Anish-patil-2005 <anishpatil6331@gmail.com>
+Date:   Fri Feb 13 23:33:49 2026 +0530
+
+    first commit

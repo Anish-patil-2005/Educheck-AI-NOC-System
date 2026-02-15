@@ -592,6 +592,10 @@ def calculate_bert_similarity(
     
     solution_text = file_utils.extract_text(assignment.solution_file_path, solution_filename)
     
+    print("Solution path:", assignment.solution_file_path)
+    print("Exists:", os.path.exists(assignment.solution_file_path))
+
+    
     if not solution_text:
         return 0.0, None
         
