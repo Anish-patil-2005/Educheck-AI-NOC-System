@@ -24,7 +24,7 @@ from app.routers.status import router as noc_status_router
 
 # Initialize FastAPI app
 app = FastAPI()
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 
 # --- CORS Configuration ---

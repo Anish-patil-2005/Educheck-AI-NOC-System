@@ -1,108 +1,96 @@
-from typing import Optional
 import io
+import os
 import aiofiles
+from typing import Optional
 from fastapi import UploadFile
-from pypdf import PdfReader
-from pypdf.errors import PdfReadError
-from docx import Document
-
+from PyPDF2 import PdfReader, errors as PyPDF2Errors
+import docx
 
 # -----------------------------
 # Save uploaded file async
 # -----------------------------
 async def save_upload_file(upload_file: UploadFile, destination: str) -> None:
+    # IMPORTANT: Reset cursor to start before reading
+    await upload_file.seek(0)
     async with aiofiles.open(destination, "wb") as out_file:
         while content := await upload_file.read(1024):
             await out_file.write(content)
-
+    # Reset cursor again so other functions can read it later
+    await upload_file.seek(0)
 
 # -----------------------------
-# Extract text from PDF (file path)
+# Extraction Logic (Kept exactly as requested)
 # -----------------------------
+
 def extract_text_from_pdf(file_path: str) -> str:
     text = ""
     try:
         reader = PdfReader(file_path)
         for page in reader.pages:
             text += page.extract_text() or ""
-    except PdfReadError as e:
-        print(f"PDF corrupted or unreadable: {e}")
     except Exception as e:
-        print(f"Unexpected PDF extraction error: {e}")
-    return text.strip()
+        print(f"PDF text extraction error: {e}")
+    return text
 
-
-# -----------------------------
-# Extract text from DOCX (file path)
-# -----------------------------
 def extract_text_from_docx(file_path: str) -> str:
     text = ""
     try:
-        doc = Document(file_path)
+        doc = docx.Document(file_path)
         for para in doc.paragraphs:
             text += para.text + "\n"
     except Exception as e:
-        print(f"DOCX extraction error: {e}")
-    return text.strip()
+        print(f"DOCX text extraction error: {e}")
+    return text
 
-
-
-
-# -----------------------------
-# Generic file extractor (disk)
-# -----------------------------
 def extract_text(file_path: str, filename: str) -> Optional[str]:
-    filename = filename.lower()
-
-    if filename.endswith(".pdf"):
+    filename_low = filename.lower()
+    if filename_low.endswith(".pdf"):
         return extract_text_from_pdf(file_path)
-
-    elif filename.endswith(".docx"):
+    elif filename_low.endswith(".docx"):
         return extract_text_from_docx(file_path)
-
-    elif filename.endswith(".txt"):
+    elif filename_low.endswith(".txt"):
         try:
-            with open(file_path, encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8", errors="ignore") as f:
                 return f.read()
         except Exception as e:
             print(f"TXT file read error: {e}")
             return None
-
     return None
 
-
-# -----------------------------
-# Extract from in-memory bytes
-# -----------------------------
 def extract_text_from_memory(file_content: bytes, filename: str) -> Optional[str]:
-    filename = filename.lower()
+    """
+    Extracts text from byte content (Your exact logic).
+    """
     text = ""
-
+    filename_low = filename.lower()
     try:
-        if filename.endswith(".pdf"):
+        if filename_low.endswith(".pdf"):
             pdf_file = io.BytesIO(file_content)
             reader = PdfReader(pdf_file)
             for page in reader.pages:
                 text += page.extract_text() or ""
-
-        elif filename.endswith(".docx"):
+        
+        elif filename_low.endswith(".docx"):
             doc_file = io.BytesIO(file_content)
-            doc = Document(doc_file)
+            doc = docx.Document(doc_file)
             for para in doc.paragraphs:
                 text += para.text + "\n"
-
-        elif filename.endswith(".txt"):
-            return file_content.decode("utf-8")
-
+        
+        elif filename_low.endswith(".txt"):
+            text = file_content.decode("utf-8", errors="ignore")
+        
         else:
             return None
 
-        return text.strip() if text else None
+        result = text.strip()
+        if not result:
+            print(f"DEBUG: Extracted text is empty for {filename}")
+            return None
+        return result
 
-    except PdfReadError as e:
-        print(f"PDF corrupted or unreadable: {e}")
+    except PyPDF2Errors.PdfReadError as e:
+        print(f"ERROR: Could not read PDF file '{filename}': {e}")
         return None
-
     except Exception as e:
-        print(f"Unexpected extraction error: {e}")
+        print(f"ERROR: Unexpected error during extraction for '{filename}': {e}")
         return None
