@@ -68,20 +68,35 @@ def _get_embedding(text: str):
     data = _query_hf_api(EMBEDDING_API, {"inputs": text})
     return np.array(data) if data else None
 
+
 def _cross_score(a: str, b: str) -> float:
-    # FIXED: Structure for Sentence Similarity (Router requirement)
+    # This structure is mandatory for the 'sentence-similarity' task on the Router
     payload = {
         "inputs": {
-            "source_sentence": a,
-            "sentences": [b]
+            "source_sentence": a,  # Your solution text
+            "sentences": [b]       # The student text (must be in a list)
         }
     }
-    data = _query_hf_api(CROSS_API, payload)
-    if not data or not isinstance(data, list): return 0.0
     
-    raw = float(data[0])
-    # Normalize score
-    return float(max(0.0, min(1.0, (math.tanh(raw) + 1) / 2)))
+    # Debug: Print the payload once to verify it looks right in your Render logs
+    print(f"DEBUG: Sending Payload -> {payload}")
+    
+    data = _query_hf_api(CROSS_API, payload)
+    
+    if data is None:
+        return 0.0
+        
+    # The API returns a list of floats, e.g., [0.8543]
+    try:
+        if isinstance(data, list) and len(data) > 0:
+            raw = float(data[0])
+            return float(max(0.0, min(1.0, (math.tanh(raw) + 1) / 2)))
+        else:
+            print(f"DEBUG: Unexpected API response format: {data}")
+            return 0.0
+    except Exception as e:
+        print(f"DEBUG: Error parsing score: {e}")
+        return 0.0
 
 def _nli_entailment_score(a: str, b: str) -> float:
     # FIXED: Structure for Zero-Shot Classification
