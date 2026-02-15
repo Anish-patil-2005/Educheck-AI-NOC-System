@@ -85,46 +85,48 @@ def _get_embedding(text: str):
     return None
 
 def _cross_score(a: str, b: str) -> float:
-    # VERIFIED: This model (stsb-roberta-large) uses the 'text-classification' schema on the Router
+    # 1. Use the 'Text Classification' schema: text & text_pair
+    # This specifically fixes the 'missing 1 required positional argument' error
     payload = {
         "inputs": {
-            "text": a,
-            "text_pair": b
+            "text": a[:800], 
+            "text_pair": b[:800]
         }
     }
+    
     data = _query_hf_api(CROSS_API, payload)
     
-    # Fallback to Sentence Similarity format if Classification fails
+    # 2. Safety Fallback: Some versions of the Router still want 'source_sentence'
     if not data or (isinstance(data, dict) and "error" in data):
-        payload = {"inputs": {"source_sentence": a, "sentences": [b]}}
+        payload = {"inputs": {"source_sentence": a[:800], "sentences": [b[:800]]}}
         data = _query_hf_api(CROSS_API, payload)
 
     if not data: return 0.0
     
     try:
+        # Handle list of dicts: [{'label': 'LABEL_1', 'score': 0.85}]
         if isinstance(data, list) and len(data) > 0:
             item = data[0]
-            # Handle list of dicts: [{'label': 'LABEL_1', 'score': 0.85}]
             if isinstance(item, dict):
                 return float(item.get('score', 0.0))
-            # Handle simple list of floats: [0.85]
-            return float(item)
+            return float(item) # Handle simple list [0.85]
         return 0.0
     except Exception as e:
-        print(f"DEBUG: Cross Score Parse Error -> {e}")
+        print(f"DEBUG: Cross Parse Error -> {e}")
         return 0.0
 
 def _nli_entailment_score(a: str, b: str) -> float:
-    # VERIFIED: Use 'zero-shot-classification' format to avoid 404/400 errors
+    # Use 'Zero-Shot' schema to fix the 404 error
     def _get_direction(premise, hypothesis):
         payload = {
-            "inputs": premise,
+            "inputs": premise[:800],
             "parameters": {"candidate_labels": ["entailment", "neutral", "contradiction"]}
         }
         res = _query_hf_api(NLI_API, payload)
         
         if res and isinstance(res, dict) and "labels" in res:
             try:
+                # Find the score specifically for 'entailment'
                 idx = res["labels"].index("entailment")
                 return float(res["scores"][idx])
             except: return 0.0
@@ -133,7 +135,6 @@ def _nli_entailment_score(a: str, b: str) -> float:
     e1 = _get_direction(a, b)
     e2 = _get_direction(b, a)
     return float(max(e1, e2))
-
 # --- Preprocessing ---
 def _preprocess(text: str) -> str:
     if not text: return ""
