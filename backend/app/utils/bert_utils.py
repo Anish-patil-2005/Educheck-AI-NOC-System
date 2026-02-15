@@ -38,29 +38,27 @@ _tfidf_vectorizer = TfidfVectorizer(max_features=20000, stop_words="english")
 
 # --- Helper: API Wrapper ---
 def _query_hf_api(url, payload, retries=3):
-    # Simplified truncation to protect the dictionary structure
-    if "inputs" in payload:
-        if isinstance(payload["inputs"], dict):
-            # Just truncate the strings, don't touch the keys
-            for k, v in payload["inputs"].items():
-                if isinstance(v, str):
-                    payload["inputs"][k] = v[:800]
-                elif isinstance(v, list):
-                    payload["inputs"][k] = [str(i)[:800] for i in v]
-        else:
-            payload["inputs"] = str(payload["inputs"])[:800]
+    # Simplified truncation to ensure we don't drop the 'sentences' key
+    if "inputs" in payload and isinstance(payload["inputs"], dict):
+        for k, v in payload["inputs"].items():
+            if isinstance(v, str):
+                payload["inputs"][k] = v[:800]
+            elif isinstance(v, list):
+                payload["inputs"][k] = [str(i)[:800] for i in v]
+    elif "inputs" in payload and isinstance(payload["inputs"], str):
+        payload["inputs"] = payload["inputs"][:800]
 
     for i in range(retries):
         try:
             response = requests.post(url, headers=HEADERS, json=payload, timeout=60)
             if response.status_code == 503:
-                time.sleep(15)
+                time.sleep(15) # Model loading
                 continue
             if response.status_code != 200:
                 print(f"DEBUG: API Error {response.status_code} -> {response.text}")
                 return None
             return response.json()
-        except Exception as e:
+        except:
             time.sleep(2)
     return None
 # --- Core Components ---
@@ -73,39 +71,35 @@ def _get_embedding(text: str):
     return None
 
 def _cross_score(a: str, b: str) -> float:
-    # 1. Try the 'sentences' format the error is literally asking for
+    # This EXACT structure is required by the SentenceSimilarityPipeline
     payload = {
         "inputs": {
-            "source_sentence": a[:500],
-            "sentences": [b[:500]]
+            "source_sentence": a[:800],
+            "sentences": [b[:800]] # Must be a list to avoid the 400 error
         }
     }
     
     data = _query_hf_api(CROSS_API, payload)
-    
-    # 2. If it still returns 400 or None, try the most basic list format
-    if not data:
-        # Some routers want a simple list of two strings for Cross-Encoders
-        payload = {"inputs": [a[:500], b[:500]]}
-        data = _query_hf_api(CROSS_API, payload)
-
     if not data: return 0.0
 
     try:
-        # Parse the result based on NLI success (list of dicts or list of floats)
+        # Based on your successful NLI log, the API is returning lists
         if isinstance(data, list) and len(data) > 0:
             item = data[0]
+            # Handle [{'score': 0.85}]
             if isinstance(item, dict):
                 return float(item.get('score', 0.0))
+            # Handle [0.85]
             return float(item)
         
+        # Fallback for direct dict {'score': 0.85}
         if isinstance(data, dict):
             return float(data.get('score', 0.0))
             
         return 0.0
-    except:
+    except Exception as e:
+        print(f"DEBUG: Cross Parse Error -> {e}")
         return 0.0
-
 def _nli_entailment_score(a: str, b: str) -> float:
     def _get_direction(p, h):
         # RESEARCHED: BART-MNLI requires parameters to trigger zero-shot-classification
