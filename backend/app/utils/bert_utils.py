@@ -22,12 +22,12 @@ nltk.download("omw-1.4", quiet=True)
 HF_API_KEY = os.getenv("HF_API_KEY")
 HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}
 
-# Endpoints - Verified for Router redirection
+# Endpoints - Aligned to 2026 Router specs
 EMBEDDING_API = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-mpnet-base-v2"
 CROSS_API     = "https://router.huggingface.co/hf-inference/models/cross-encoder/stsb-roberta-large"
 NLI_API       = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-mnli"
 
-# Weights
+# Aligned Weights for balanced grading
 WEIGHT_EMBED = 0.40
 WEIGHT_CROSS = 0.35
 WEIGHT_NLI   = 0.15
@@ -37,21 +37,21 @@ _tfidf_vectorizer = TfidfVectorizer(max_features=20000, stop_words="english")
 
 # --- Helper: API Wrapper ---
 def _query_hf_api(url, payload, retries=3):
-    # TRUNCATION: Mandatory for the free Inference API to avoid 400 Payload Too Large
-    if "inputs" in payload:
-        if isinstance(payload["inputs"], dict):
-            # For dict inputs, truncate both specific keys
-            for key in ["text", "source_sentence", "premise"]:
-                if key in payload["inputs"]:
-                    payload["inputs"][key] = payload["inputs"][key][:800]
-            for key in ["text_pair", "sentences", "hypothesis"]:
-                if key in payload["inputs"]:
-                    if isinstance(payload["inputs"][key], list):
-                        payload["inputs"][key] = [s[:800] for s in payload["inputs"][key]]
-                    else:
-                        payload["inputs"][key] = payload["inputs"][key][:800]
-        elif isinstance(payload["inputs"], str):
-            payload["inputs"] = payload["inputs"][:800]
+    # TRUNCATION: Mandatory logic to ensure the specific Task schemas are maintained
+    if "inputs" in payload and isinstance(payload["inputs"], dict):
+        # Truncate source_sentence for Similarity/Cross task
+        if "source_sentence" in payload["inputs"]:
+            payload["inputs"]["source_sentence"] = str(payload["inputs"]["source_sentence"])[:800]
+        # Truncate sentences LIST for Similarity task
+        if "sentences" in payload["inputs"] and isinstance(payload["inputs"]["sentences"], list):
+            payload["inputs"]["sentences"] = [str(s)[:800] for s in payload["inputs"]["sentences"]]
+        # Truncate standard classification/NLI text
+        if "text" in payload["inputs"]:
+            payload["inputs"]["text"] = str(payload["inputs"]["text"])[:800]
+        if "premise" in payload["inputs"]:
+            payload["inputs"]["premise"] = str(payload["inputs"]["premise"])[:800]
+    elif "inputs" in payload and isinstance(payload["inputs"], str):
+        payload["inputs"] = payload["inputs"][:800]
 
     for i in range(retries):
         try:
@@ -80,99 +80,88 @@ def _query_hf_api(url, payload, retries=3):
 def _get_embedding(text: str):
     data = _query_hf_api(EMBEDDING_API, {"inputs": text})
     if data and isinstance(data, list):
-        # Flatten because the API sometimes returns [[values]]
+        # Flatten handles both [[v1, v2]] and [v1, v2] return styles
         return np.array(data).flatten()
     return None
 
 def _cross_score(a: str, b: str) -> float:
-    # Most Cross-Encoders on HF use the Text Classification pipeline
+    # RESEARCHED: This exact structure satisfies the 'sentences' positional argument error
     payload = {
         "inputs": {
-            "text": a[:800],
-            "text_pair": b[:800]
+            "source_sentence": a[:800],
+            "sentences": [b[:800]]
         }
     }
     
     data = _query_hf_api(CROSS_API, payload)
-    
-    # If the Router returns an error about 'sentences', try the Similarity format
-    if not data or (isinstance(data, dict) and "error" in data):
-        print(f"DEBUG: Cross API Error/Retry -> {data}")
-        payload = {
-            "inputs": {
-                "source_sentence": a[:800],
-                "sentences": [b[:800]]
-            }
-        }
-        data = _query_hf_api(CROSS_API, payload)
-
     if not data: return 0.0
-    
+
     try:
-        # If it returns Classification format: [{'label': 'SCORE', 'score': 0.85}]
-        if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
-            return float(data[0].get('score', 0.0))
-        # If it returns Similarity format: [0.85]
+        # RESEARCHED: Handles both a direct float list [0.85] and list of dicts
         if isinstance(data, list) and len(data) > 0:
-            return float(data[0])
+            item = data[0]
+            if isinstance(item, dict):
+                return float(item.get('score', 0.0))
+            return float(item)
         return 0.0
     except Exception as e:
-        print(f"DEBUG: Cross Parse Fail -> {e}")
+        print(f"DEBUG: Cross Parse Error -> {e}")
         return 0.0
-    
+
 def _nli_entailment_score(a: str, b: str) -> float:
-    def _get_direction(premise, hypothesis):
-        # NLI MUST have parameters or it 404s/400s
+    def _get_direction(p, h):
+        # RESEARCHED: BART-MNLI requires parameters to trigger zero-shot-classification
         payload = {
-            "inputs": premise[:800],
-            "parameters": {
-                "candidate_labels": ["entailment", "neutral", "contradiction"]
-            }
+            "inputs": p[:800],
+            "parameters": {"candidate_labels": ["entailment", "neutral", "contradiction"]}
         }
         res = _query_hf_api(NLI_API, payload)
-        
-        # Log the response to see why it's failing if it still gives 0
-        if not res or "labels" not in res:
-            print(f"DEBUG: NLI API Error -> {res}")
-            return 0.0
-            
+        if not res: return 0.0
+
         try:
-            idx = res["labels"].index("entailment")
-            return float(res["scores"][idx])
-        except:
+            # RESEARCHED: Your logs show a LIST of dicts: [{'label': 'entailment', 'score': 0.52}, ...]
+            if isinstance(res, list):
+                for item in res:
+                    if item.get('label') == 'entailment':
+                        return float(item.get('score', 0.0))
+            
+            # Standard dictionary response fallback
+            if isinstance(res, dict) and "labels" in res:
+                idx = res["labels"].index("entailment")
+                return float(res["scores"][idx])
+            return 0.0
+        except Exception as e:
+            print(f"DEBUG: NLI Parse Error -> {e}")
             return 0.0
 
-    # Checking both ways ensures the student didn't just copy-paste the question
-    e1 = _get_direction(a, b)
-    e2 = _get_direction(b, a)
-    return float(max(e1, e2))# --- Preprocessing ---
+    return float(max(_get_direction(a, b), _get_direction(b, a)))
+
+# --- Preprocessing ---
 def _preprocess(text: str) -> str:
     if not text: return ""
     text = re.sub(r"```[\s\S]*?```", " ", text) # Remove code
     text = re.sub(r'\s+', ' ', text).strip()
-    # Light cleaning to keep semantic meaning intact for BERT
     return text
 
 # --- Main Logic ---
 def compute_bert_similarity(doc_a: str, doc_b: str) -> float:
     try:
-        # Preprocess lightly
         a, b = _preprocess(doc_a), _preprocess(doc_b)
         if not a or not b: return 0.0
 
-        # 1. TF-IDF (Local)
+        # 1. TF-IDF (Always works locally)
         vecs = _tfidf_vectorizer.fit_transform([a, b])
         tfidf = float(cosine_similarity(vecs[0], vecs[1])[0, 0])
 
         # 2. Embedding (API)
         emb_a, emb_b = _get_embedding(a), _get_embedding(b)
-        emb_score = 0.5 # Neutral fallback
+        emb_score = 0.5 
         if emb_a is not None and emb_b is not None:
             dot = np.dot(emb_a, emb_b)
             norm = (np.linalg.norm(emb_a) * np.linalg.norm(emb_b)) + 1e-9
             emb_score = (float(dot / norm) + 1.0) / 2.0
 
-        # 3. Cross-Encoder & NLI (API)
+        # 3. Cross-Encoder & NLI (API) - The fixed logic
         cross_score = _cross_score(a, b)
         nli_score = _nli_entailment_score(a, b)
 
