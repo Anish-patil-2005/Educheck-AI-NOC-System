@@ -80,33 +80,50 @@ def _get_embedding(text: str):
     return None
 
 def _cross_score(a: str, b: str) -> float:
+    # We use the 'text' / 'text_pair' format which is the most compatible 
+    # fallback for Cross-Encoders on the HF Router.
     payload = {
         "inputs": {
-            "source_sentence": a,
-            "sentences": [b]
+            "text": a[:1000], 
+            "text_pair": b[:1000]
         }
     }
+    
     data = _query_hf_api(CROSS_API, payload)
-    if not data or not isinstance(data, list): return 0.0
+    
+    # If the first format fails, try the alternative 'source_sentence' format
+    if data is None or (isinstance(data, dict) and "error" in data):
+        payload = {"inputs": {"source_sentence": a[:1000], "sentences": [b[:1000]]}}
+        data = _query_hf_api(CROSS_API, payload)
+
+    if not data: return 0.0
     
     try:
-        raw = float(data[0])
-        return float(max(0.0, min(1.0, (math.tanh(raw) + 1) / 2)))
+        # Cross-encoders usually return a list: [{'label': 'LABEL_0', 'score': 0.9}]
+        # or a raw list of floats [0.98]
+        if isinstance(data, list):
+            if isinstance(data[0], dict):
+                return float(data[0].get('score', 0.0))
+            return float(data[0])
+        return 0.0
     except:
         return 0.0
 
 def _nli_entailment_score(a: str, b: str) -> float:
+    # Fixing the 404 by ensuring we use the standard Zero-Shot task structure
     def _get_direction(premise, hypothesis):
         payload = {
-            "inputs": premise,
-            "parameters": {"candidate_labels": ["contradiction", "neutral", "entailment"]}
+            "inputs": premise[:1000],
+            "parameters": {"candidate_labels": ["entailment", "contradiction", "neutral"]}
         }
         res = _query_hf_api(NLI_API, payload)
-        if not res or "labels" not in res: return 0.0
-        try:
-            idx = res["labels"].index("entailment")
-            return res["scores"][idx]
-        except: return 0.0
+        
+        if res and isinstance(res, dict) and "labels" in res:
+            try:
+                idx = res["labels"].index("entailment")
+                return res["scores"][idx]
+            except: return 0.0
+        return 0.0
 
     e1 = _get_direction(a, b)
     e2 = _get_direction(b, a)
