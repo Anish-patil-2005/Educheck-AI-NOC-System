@@ -5,7 +5,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-SQLALCHEMY_DATABASE_URL = "postgresql://educheck_ai_assignment_noc_system_user:R3l5xGUOPym6X7vz5GaAYo7vz8Y5HQbh@dpg-d682arsr85hc73cj7ll0-a.oregon-postgres.render.com/educheck_ai_assignment_noc_system"
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)

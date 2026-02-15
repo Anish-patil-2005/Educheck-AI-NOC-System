@@ -21,10 +21,11 @@ from app.routers import (
 from app.routers.status import router as noc_status_router
 
 # Create database tables
-#Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI app
 app = FastAPI()
+Base.metadata.create_all(bind=engine)
+
 
 # --- CORS Configuration ---
 # Define the origins (domains) that are allowed to make requests to this backend.
