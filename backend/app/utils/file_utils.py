@@ -28,6 +28,12 @@ def extract_text_from_pdf(file_path: str) -> str:
         reader = PdfReader(file_path)
         for page in reader.pages:
             text += page.extract_text() or ""
+        
+        print(f"DEBUG: Extracted {len(text)} characters from {file_path}")
+        
+        if len(text.strip()) == 0:
+            print("WARNING: Extraction returned NO text. Is this a scanned image?") 
+            
     except Exception as e:
         print(f"PDF text extraction error: {e}")
     return text

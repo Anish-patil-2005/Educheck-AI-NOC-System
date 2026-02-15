@@ -22,9 +22,11 @@ HF_API_KEY = os.getenv("HF_API_KEY")
 HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}
 
 # Endpoints matching your local models
-EMBEDDING_API = "https://api-inference.huggingface.co/models/sentence-transformers/all-mpnet-base-v2"
-CROSS_API     = "https://api-inference.huggingface.co/models/cross-encoder/stsb-roberta-large"
-NLI_API       = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
+# Updated to the new Router endpoints
+EMBEDDING_API = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-mpnet-base-v2"
+CROSS_API     = "https://router.huggingface.co/hf-inference/models/cross-encoder/stsb-roberta-large"
+NLI_API       = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-mnli"
+
 
 # Weights from your local logic
 WEIGHT_EMBED = 0.4
