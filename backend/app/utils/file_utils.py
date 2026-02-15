@@ -44,6 +44,12 @@ def extract_text_from_docx(file_path: str) -> str:
         doc = docx.Document(file_path)
         for para in doc.paragraphs:
             text += para.text + "\n"
+            
+        print(f"DEBUG: Extracted {len(text)} characters from {file_path}")
+        
+        if len(text.strip()) == 0:
+            print("WARNING: Extraction returned NO text. Is this a scanned image?") 
+            
     except Exception as e:
         print(f"DOCX text extraction error: {e}")
     return text

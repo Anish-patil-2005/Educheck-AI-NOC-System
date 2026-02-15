@@ -1,6 +1,7 @@
 import os
 import math
 import re
+import time
 import numpy as np
 import requests
 from typing import List
@@ -21,14 +22,12 @@ nltk.download("omw-1.4", quiet=True)
 HF_API_KEY = os.getenv("HF_API_KEY")
 HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}
 
-# Endpoints matching your local models
 # Updated to the new Router endpoints
 EMBEDDING_API = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-mpnet-base-v2"
 CROSS_API     = "https://router.huggingface.co/hf-inference/models/cross-encoder/stsb-roberta-large"
 NLI_API       = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-mnli"
 
-
-# Weights from your local logic
+# Weights
 WEIGHT_EMBED = 0.4
 WEIGHT_CROSS = 0.35
 WEIGHT_NLI   = 0.15
@@ -37,40 +36,63 @@ WEIGHT_TFIDF = 0.10
 _tfidf_vectorizer = TfidfVectorizer(max_features=20000, stop_words="english")
 
 # --- Helper: API Wrapper with Model Loading Check ---
-def _query_hf_api(url, payload):
-    response = requests.post(url, headers=HEADERS, json=payload, timeout=40)
-    data = response.json()
-    
-    # HF models "sleep" on free tier. If loading, we must wait or return error.
-    if isinstance(data, dict) and "estimated_time" in data:
-        raise Exception(f"Model is currently loading on HF. Try again in {data['estimated_time']}s")
-    
-    if response.status_code != 200:
-        raise Exception(f"API Error: {data}")
-    return data
+def _query_hf_api(url, payload, retries=3):
+    for i in range(retries):
+        try:
+            response = requests.post(url, headers=HEADERS, json=payload, timeout=40)
+            data = response.json()
+            
+            # 1. Handle "Model is loading"
+            if isinstance(data, dict) and "estimated_time" in data:
+                wait_time = min(data['estimated_time'], 20)
+                print(f"Model loading... waiting {wait_time}s")
+                time.sleep(wait_time)
+                continue
+            
+            # 2. Handle HTTP Errors
+            if response.status_code != 200:
+                print(f"DEBUG: API Error Code {response.status_code} -> {data}")
+                return None
+            
+            return data
+            
+        except Exception as e:
+            print(f"Request attempt {i+1} failed: {e}")
+            time.sleep(2)
+    return None
 
 # --- Core Components ---
 
 def _get_embedding(text: str):
-    # This returns the actual vector for mpnet
+    # Standard format for Feature Extraction models
     data = _query_hf_api(EMBEDDING_API, {"inputs": text})
-    return np.array(data)
+    return np.array(data) if data else None
 
 def _cross_score(a: str, b: str) -> float:
-    # STSB-Roberta returns a regression score
-    data = _query_hf_api(CROSS_API, {"inputs": {"source_sentence": a, "sentences": [b]}})
+    # FIXED: Structure for Sentence Similarity (Router requirement)
+    payload = {
+        "inputs": {
+            "source_sentence": a,
+            "sentences": [b]
+        }
+    }
+    data = _query_hf_api(CROSS_API, payload)
+    if not data or not isinstance(data, list): return 0.0
+    
     raw = float(data[0])
+    # Normalize score
     return float(max(0.0, min(1.0, (math.tanh(raw) + 1) / 2)))
 
 def _nli_entailment_score(a: str, b: str) -> float:
-    # Mimics your _single(a, b) and _single(b, a) direction check
+    # FIXED: Structure for Zero-Shot Classification
     def _get_direction(premise, hypothesis):
         payload = {
             "inputs": premise,
             "parameters": {"candidate_labels": ["contradiction", "neutral", "entailment"]}
         }
         res = _query_hf_api(NLI_API, payload)
-        # Find index of 'entailment'
+        if not res or "labels" not in res: return 0.0
+        
         idx = res["labels"].index("entailment")
         return res["scores"][idx]
 
@@ -78,7 +100,7 @@ def _nli_entailment_score(a: str, b: str) -> float:
     e2 = _get_direction(b, a)
     return float(max(e1, e2))
 
-# --- Preprocessing (Kept exactly as your local version) ---
+# --- Preprocessing ---
 def _expand_synonyms(token: str) -> List[str]:
     synonyms = set([token])
     for syn in wn.synsets(token):
@@ -120,14 +142,17 @@ def compute_bert_similarity(doc_a: str, doc_b: str) -> float:
 
         # 2. Embedding Cosine
         emb_a, emb_b = _get_embedding(a), _get_embedding(b)
-        emb_cos = float(np.dot(emb_a, emb_b) / (np.linalg.norm(emb_a) * np.linalg.norm(emb_b) + 1e-9))
-        emb_cos_u = (emb_cos + 1.0) / 2.0
+        if emb_a is None or emb_b is None:
+            emb_cos_u = 0.0
+        else:
+            emb_cos = float(np.dot(emb_a, emb_b) / (np.linalg.norm(emb_a) * np.linalg.norm(emb_b) + 1e-9))
+            emb_cos_u = (emb_cos + 1.0) / 2.0
 
         # 3. Cross-Encoder & NLI
         cross = _cross_score(a, b)
         nli = _nli_entailment_score(a, b)
 
-        # 4. Apply your local weighting logic
+        # 4. Weighting Logic
         weights = [WEIGHT_EMBED, WEIGHT_CROSS, WEIGHT_NLI, WEIGHT_TFIDF]
         
         if emb_cos_u > 0.75 and cross > 0.75 and nli > 0.5 and tfidf > 0.15:
@@ -146,5 +171,5 @@ def compute_bert_similarity(doc_a: str, doc_b: str) -> float:
         return float(max(0.0, min(1.0, raw)))
 
     except Exception as e:
-        print(f"DEBUG: Similarity Error -> {e}")
+        print(f"DEBUG: Final Logic Error -> {e}")
         return 0.0
