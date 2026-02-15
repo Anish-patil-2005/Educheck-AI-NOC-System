@@ -73,43 +73,39 @@ def _get_embedding(text: str):
     return None
 
 def _cross_score(a: str, b: str) -> float:
-    # FORMAT A: Sentence Similarity (The one the error is asking for)
-    payload_sim = {
+    # 1. Try the 'sentences' format the error is literally asking for
+    payload = {
         "inputs": {
-            "source_sentence": a[:800],
-            "sentences": [b[:800]]
+            "source_sentence": a[:500],
+            "sentences": [b[:500]]
         }
     }
     
-    # FORMAT B: Text Classification (The standard backup)
-    payload_class = {
-        "inputs": {
-            "text": a[:800],
-            "text_pair": b[:800]
-        }
-    }
-
-    # Try Format A first because your error specifically asks for it
-    data = _query_hf_api(CROSS_API, payload_sim)
+    data = _query_hf_api(CROSS_API, payload)
     
-    # If it fails, try Format B
+    # 2. If it still returns 400 or None, try the most basic list format
     if not data:
-        data = _query_hf_api(CROSS_API, payload_class)
+        # Some routers want a simple list of two strings for Cross-Encoders
+        payload = {"inputs": [a[:500], b[:500]]}
+        data = _query_hf_api(CROSS_API, payload)
 
     if not data: return 0.0
 
     try:
-        # Based on your NLI success, the result is likely a list
+        # Parse the result based on NLI success (list of dicts or list of floats)
         if isinstance(data, list) and len(data) > 0:
             item = data[0]
             if isinstance(item, dict):
-                # If it's [{'score': 0.9}]
                 return float(item.get('score', 0.0))
-            # If it's [0.9]
             return float(item)
+        
+        if isinstance(data, dict):
+            return float(data.get('score', 0.0))
+            
         return 0.0
     except:
         return 0.0
+
 def _nli_entailment_score(a: str, b: str) -> float:
     def _get_direction(p, h):
         # RESEARCHED: BART-MNLI requires parameters to trigger zero-shot-classification
