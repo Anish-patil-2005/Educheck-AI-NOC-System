@@ -85,57 +85,67 @@ def _get_embedding(text: str):
     return None
 
 def _cross_score(a: str, b: str) -> float:
-    # 1. Use the 'Text Classification' schema: text & text_pair
-    # This specifically fixes the 'missing 1 required positional argument' error
+    # Most Cross-Encoders on HF use the Text Classification pipeline
     payload = {
         "inputs": {
-            "text": a[:800], 
+            "text": a[:800],
             "text_pair": b[:800]
         }
     }
     
     data = _query_hf_api(CROSS_API, payload)
     
-    # 2. Safety Fallback: Some versions of the Router still want 'source_sentence'
+    # If the Router returns an error about 'sentences', try the Similarity format
     if not data or (isinstance(data, dict) and "error" in data):
-        payload = {"inputs": {"source_sentence": a[:800], "sentences": [b[:800]]}}
+        print(f"DEBUG: Cross API Error/Retry -> {data}")
+        payload = {
+            "inputs": {
+                "source_sentence": a[:800],
+                "sentences": [b[:800]]
+            }
+        }
         data = _query_hf_api(CROSS_API, payload)
 
     if not data: return 0.0
     
     try:
-        # Handle list of dicts: [{'label': 'LABEL_1', 'score': 0.85}]
+        # If it returns Classification format: [{'label': 'SCORE', 'score': 0.85}]
+        if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
+            return float(data[0].get('score', 0.0))
+        # If it returns Similarity format: [0.85]
         if isinstance(data, list) and len(data) > 0:
-            item = data[0]
-            if isinstance(item, dict):
-                return float(item.get('score', 0.0))
-            return float(item) # Handle simple list [0.85]
+            return float(data[0])
         return 0.0
     except Exception as e:
-        print(f"DEBUG: Cross Parse Error -> {e}")
+        print(f"DEBUG: Cross Parse Fail -> {e}")
         return 0.0
-
+    
 def _nli_entailment_score(a: str, b: str) -> float:
-    # Use 'Zero-Shot' schema to fix the 404 error
     def _get_direction(premise, hypothesis):
+        # NLI MUST have parameters or it 404s/400s
         payload = {
             "inputs": premise[:800],
-            "parameters": {"candidate_labels": ["entailment", "neutral", "contradiction"]}
+            "parameters": {
+                "candidate_labels": ["entailment", "neutral", "contradiction"]
+            }
         }
         res = _query_hf_api(NLI_API, payload)
         
-        if res and isinstance(res, dict) and "labels" in res:
-            try:
-                # Find the score specifically for 'entailment'
-                idx = res["labels"].index("entailment")
-                return float(res["scores"][idx])
-            except: return 0.0
-        return 0.0
+        # Log the response to see why it's failing if it still gives 0
+        if not res or "labels" not in res:
+            print(f"DEBUG: NLI API Error -> {res}")
+            return 0.0
+            
+        try:
+            idx = res["labels"].index("entailment")
+            return float(res["scores"][idx])
+        except:
+            return 0.0
 
+    # Checking both ways ensures the student didn't just copy-paste the question
     e1 = _get_direction(a, b)
     e2 = _get_direction(b, a)
-    return float(max(e1, e2))
-# --- Preprocessing ---
+    return float(max(e1, e2))# --- Preprocessing ---
 def _preprocess(text: str) -> str:
     if not text: return ""
     text = re.sub(r"```[\s\S]*?```", " ", text) # Remove code
