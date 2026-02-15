@@ -38,44 +38,31 @@ _tfidf_vectorizer = TfidfVectorizer(max_features=20000, stop_words="english")
 
 # --- Helper: API Wrapper ---
 def _query_hf_api(url, payload, retries=3):
-    # TRUNCATION: Mandatory logic to ensure the specific Task schemas are maintained
-    if "inputs" in payload and isinstance(payload["inputs"], dict):
-        # Truncate source_sentence for Similarity/Cross task
-        if "source_sentence" in payload["inputs"]:
-            payload["inputs"]["source_sentence"] = str(payload["inputs"]["source_sentence"])[:800]
-        # Truncate sentences LIST for Similarity task
-        if "sentences" in payload["inputs"] and isinstance(payload["inputs"]["sentences"], list):
-            payload["inputs"]["sentences"] = [str(s)[:800] for s in payload["inputs"]["sentences"]]
-        # Truncate standard classification/NLI text
-        if "text" in payload["inputs"]:
-            payload["inputs"]["text"] = str(payload["inputs"]["text"])[:800]
-        if "premise" in payload["inputs"]:
-            payload["inputs"]["premise"] = str(payload["inputs"]["premise"])[:800]
-    elif "inputs" in payload and isinstance(payload["inputs"], str):
-        payload["inputs"] = payload["inputs"][:800]
+    # Simplified truncation to protect the dictionary structure
+    if "inputs" in payload:
+        if isinstance(payload["inputs"], dict):
+            # Just truncate the strings, don't touch the keys
+            for k, v in payload["inputs"].items():
+                if isinstance(v, str):
+                    payload["inputs"][k] = v[:800]
+                elif isinstance(v, list):
+                    payload["inputs"][k] = [str(i)[:800] for i in v]
+        else:
+            payload["inputs"] = str(payload["inputs"])[:800]
 
     for i in range(retries):
         try:
             response = requests.post(url, headers=HEADERS, json=payload, timeout=60)
-            
             if response.status_code == 503:
-                data = response.json()
-                wait_time = min(data.get('estimated_time', 20), 20)
-                print(f"Model loading... waiting {wait_time}s")
-                time.sleep(wait_time)
+                time.sleep(15)
                 continue
-            
             if response.status_code != 200:
                 print(f"DEBUG: API Error {response.status_code} -> {response.text}")
                 return None
-            
             return response.json()
-            
         except Exception as e:
-            print(f"Attempt {i+1} failed: {e}")
             time.sleep(2)
     return None
-
 # --- Core Components ---
 
 def _get_embedding(text: str):
@@ -86,32 +73,42 @@ def _get_embedding(text: str):
     return None
 
 def _cross_score(a: str, b: str) -> float:
-    # 2026 Router Fix: Using the 'Similarity' schema with 'source_sentence'
-    payload = {
+    # FORMAT A: Sentence Similarity (The one the error is asking for)
+    payload_sim = {
         "inputs": {
             "source_sentence": a[:800],
             "sentences": [b[:800]]
         }
     }
     
-    data = _query_hf_api(CROSS_API, payload)
+    # FORMAT B: Text Classification (The standard backup)
+    payload_class = {
+        "inputs": {
+            "text": a[:800],
+            "text_pair": b[:800]
+        }
+    }
+
+    # Try Format A first because your error specifically asks for it
+    data = _query_hf_api(CROSS_API, payload_sim)
+    
+    # If it fails, try Format B
+    if not data:
+        data = _query_hf_api(CROSS_API, payload_class)
+
     if not data: return 0.0
 
     try:
-        # Research shows the Router may return [0.85] or [{'score': 0.85}]
+        # Based on your NLI success, the result is likely a list
         if isinstance(data, list) and len(data) > 0:
             item = data[0]
             if isinstance(item, dict):
+                # If it's [{'score': 0.9}]
                 return float(item.get('score', 0.0))
+            # If it's [0.9]
             return float(item)
-        
-        # Fallback for direct dict response
-        if isinstance(data, dict):
-            return float(data.get('score', 0.0))
-            
         return 0.0
-    except Exception as e:
-        print(f"DEBUG: Cross Parse Error -> {e}")
+    except:
         return 0.0
 def _nli_entailment_score(a: str, b: str) -> float:
     def _get_direction(p, h):
