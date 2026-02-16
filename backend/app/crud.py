@@ -582,25 +582,22 @@ class SolutionFileNotFoundError(Exception):
 def calculate_bert_similarity(
     assignment: models.Assignment, text_to_check: str
 ) -> tuple[float, str | None]:
-    
+    """
+    Calculates BERT similarity and returns the score and the sample text used.
+    """
     if not assignment.solution_file_path or not os.path.exists(assignment.solution_file_path):
-         raise SolutionFileNotFoundError("Teacher's solution file is not available.")
+         raise SolutionFileNotFoundError("Teacher's solution file is not available for comparison.") # Return score and None for sample text
 
     solution_filename = os.path.basename(assignment.solution_file_path)
+    
     solution_text = file_utils.extract_text(assignment.solution_file_path, solution_filename)
-
+    
     if not solution_text:
         return 0.0, None
+        
+    score = bert_utils.compute_bert_similarity(text_to_check, solution_text)
+    return score, solution_text # Return both the score and the text
 
-    # --- THE FIX: Use your utils to clean the text BEFORE scoring ---
-    # This removes "Roll No", "Name", "Batch" etc.
-    cleaned_student_text = bert_utils._preprocess_and_tokenize(text_to_check)
-    cleaned_solution_text = bert_utils._preprocess_and_tokenize(solution_text)
-
-    # Now send the CLEANED text to the AI
-    score = bert_utils.compute_bert_similarity(cleaned_student_text, cleaned_solution_text)
-    
-    return score, solution_text
 # In app/crud.py
 
 # Make sure these are imported at the top of your file
