@@ -87,38 +87,32 @@ def _get_embedding(text: str):
         return np.array(data).flatten()
     return None
 
-def _cross_score(a: str, b: str) -> float:
-    # Ensure inputs are clean strings and limited to model max tokens roughly
-    source = a[:800]
-    comparison = b[:800]
+import requests
+
+# Change ONLY this function in your bert_utils.py
+def _cross_score(doc_a, doc_b):
+    # The Cross-Encoder model expects a specific 'source_sentence' and 'sentences' list
+    API_URL = "https://api-inference.huggingface.co/models/cross-encoder/ms-marco-MiniLM-L-6-v2"
+    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
     
-    # This specific structure is what the Hugging Face sentence-similarity task requires
+    # CORRECT PAYLOAD STRUCTURE
     payload = {
         "inputs": {
-            "source_sentence": source,
-            "sentences": [comparison] 
+            "source_sentence": doc_a,
+            "sentences": [doc_b]
         }
     }
     
-    data = _query_hf_api(CROSS_API, payload)
-    
-    if not data: 
-        return 0.0
-
     try:
-        # Sentence Similarity API usually returns a list of floats or a list of scores
-        # Example: [0.8532] or [{"score": 0.8532}]
-        if isinstance(data, list) and len(data) > 0:
-            result = data[0]
-            if isinstance(result, dict):
-                return float(result.get('score', 0.0))
-            return float(result)
-        
-        return 0.0
+        response = requests.post(API_URL, headers=headers, json=payload)
+        # If the API returns a list (e.g., [0.85]), take the first element
+        result = response.json()
+        if isinstance(result, list):
+            return float(result[0])
+        return float(result)
     except Exception as e:
-        print(f"DEBUG: Cross Parse Error -> {e} | Data received: {data}")
-        return 0.0
-    
+        print(f"CROSS-ENCODER ERROR: {e}")
+        return 0.0    
     
 def _nli_entailment_score(a: str, b: str) -> float:
     def _get_direction(p, h):
