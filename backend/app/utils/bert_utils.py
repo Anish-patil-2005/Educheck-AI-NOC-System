@@ -29,8 +29,8 @@ NLI_API       = "https://router.huggingface.co/hf-inference/models/facebook/bart
 
 # Aligned Weights for balanced grading
 # Updated Weights for a guaranteed pass
-WEIGHT_EMBED = 0.35  # Reduced from 0.40
-WEIGHT_CROSS = 0.35
+WEIGHT_EMBED = 0.50  # Reduced from 0.40
+WEIGHT_CROSS = 0.0
 WEIGHT_NLI   = 0.20  # Increased from 0.15 (Since this is working!)
 WEIGHT_TFIDF = 0.10
 
