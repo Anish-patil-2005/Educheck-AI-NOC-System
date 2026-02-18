@@ -2,6 +2,7 @@
 
 The **Intelligent Assignment Evaluation System (IAES)** is designed to streamline assignment management, submission tracking, similarity detection, analytics, and Non-Objection Certificate (NOC) updates. The system provides a secure, scalable, and intelligent platform for academic or industry-like environments, serving students, teachers, and administrators efficiently.
 
+Live at: https://educheck-ai-assignment-noc-system.vercel.app/
 ---
 
 ## Table of Contents
